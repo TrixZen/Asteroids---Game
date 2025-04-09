@@ -9,6 +9,7 @@ public class Plane {
     Plane(KeyHandler keyH) {
         this.keyH = keyH;
     }
+
     public void update() {
         if (keyH.upPressed || keyH.leftPressed || keyH.rightPressed) {
             if (keyH.upPressed)
@@ -19,25 +20,27 @@ public class Plane {
                 rotateRight();
         }
     }
+
     public void accelerate() {
         int speed = 5;
-        x += speed * Math.cos(Math.toRadians(direction));
-        y += speed * Math.sin(Math.toRadians(direction));
+        x += (int) (speed * Math.cos(Math.toRadians(direction)));
+        y += (int) (speed * Math.sin(Math.toRadians(direction)));
     }
+
     public void rotateLeft() {
         direction -=2;
-        x += Math.cos(Math.toRadians(direction));
-        y += Math.sin(Math.toRadians(direction));
+        x += (int) Math.cos(Math.toRadians(direction));
+        y += (int) Math.sin(Math.toRadians(direction));
     }
+
     public void rotateRight() {
         direction += 2;
     }
+
     public void draw(Graphics g) {
         int[] xPoints = {x , x-ship_size, x+ship_size};
         int[] yPoints = {y, y+ship_size, y+ship_size};
         g.setColor(Color.WHITE);
         g.drawPolygon(xPoints, yPoints, 3);
-
     }
-
 }

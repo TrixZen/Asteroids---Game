@@ -1,6 +1,4 @@
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
@@ -11,81 +9,90 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 public class RotateTriangle extends JPanel {
-    private final int centerX;
-    private final int centerY;
-    private double angle;
+    private static final int screenWidth = 400;
+    private static final int screenHeight = 400;
+    private static final int centerX = 200;
+    private static final int centerY = 200;
+    private double angle = 0;
+    private final int[] xPoints = { -20, 0, 20 };
+    private final int[] yPoints = { 20, -20, 20 };
+    private int yPos = 0;
+    private int xPos = 0;
+    private double direction = 270;
+
 
     public RotateTriangle() {
-        centerX = 200;
-        centerY = 200;
-        angle = 0;
-
-        // Bind the key events to the rotation actions
+        init();
         bindKeyEvents();
     }
 
+    private void init() {
+        this.setPreferredSize(new Dimension(screenWidth, screenHeight));
+        this.setBackground(Color.black);
+        this.setDoubleBuffered(true);
+        this.setFocusable(true);
+    }
+
     private void bindKeyEvents() {
-        // Create an action for rotating to the left
         Action rotateLeftAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                rotateTriangle(5.0); // Rotate 5 degrees to the left
+                rotateTriangle(-5.0);
             }
         };
-
-        // Create an action for rotating to the right
         Action rotateRightAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                rotateTriangle(-5.0); // Rotate 5 degrees to the right
+                rotateTriangle(5.0);
             }
         };
-
-        // Bind the left arrow key to the rotate left action
+        Action moveForwardAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                moveTriangle();
+            }
+        };
         getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "rotateLeft");
         getActionMap().put("rotateLeft", rotateLeftAction);
 
-        // Bind the right arrow key to the rotate right action
         getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "rotateRight");
         getActionMap().put("rotateRight", rotateRightAction);
 
-        // Set the panel focusable for key events
+        getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "moveForward");
+        getActionMap().put("moveForward", moveForwardAction);
+
         setFocusable(true);
     }
 
     private void rotateTriangle(double rotation) {
         angle += rotation;
+        direction += rotation;
 
-        // Repaint the panel to update the triangle's position
+        if (direction >= 360) direction -= 360;
+        if (direction < 0) direction += 360;
+        repaint();
+    }
+
+    private void moveTriangle() {
+        double radian = Math.toRadians(direction);
+        xPos += (int) (5 * Math.cos(radian));
+        yPos += (int) (5 * Math.sin(radian));
         repaint();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        // Clear the panel
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, getWidth(), getHeight());
-
-        // Define the triangle's vertices
-        int[] xPoints = { centerX - 50, centerX, centerX + 50 };
-        int[] yPoints = { centerY + 50, centerY - 50, centerY + 50 };
-
-        // Create a new Graphics2D object from the original Graphics object
         Graphics2D g2d = (Graphics2D) g.create();
 
-        // Translate to the center of the triangle
-        g2d.translate(centerX, centerY);
-
-        // Rotate the triangle around its center
+        g2d.translate(centerX + xPos, centerY + yPos);
         g2d.rotate(Math.toRadians(angle));
-
-        // Draw the triangle
         g2d.setColor(Color.BLUE);
         g2d.fillPolygon(xPoints, yPoints, 3);
 
-        // Dispose the Graphics2D object
+//        g2d.drawLine(-100, 0, 100, 0);
+//        g2d.drawLine(0, -100, 0, 100);
+
         g2d.dispose();
     }
 
@@ -93,11 +100,13 @@ public class RotateTriangle extends JPanel {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Rotate Triangle");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(400, 400);
-            frame.setLocationRelativeTo(null);
+            frame.setResizable(false);
 
             RotateTriangle triangle = new RotateTriangle();
             frame.add(triangle);
+            frame.pack();
+
+            frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });
     }
